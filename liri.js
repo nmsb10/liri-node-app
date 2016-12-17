@@ -35,13 +35,14 @@ inquirer.prompt([
 	}
 ]).then(function(answers){
 	if(answers.whatToDo==='my-tweets'){
-		console.log('your last 20 tweets');
+		//console.log('your last 20 tweets');
 		forTwitter.get('statuses/user_timeline', {screen_name: 'happyfoxchi'}, function(error, tweets, response) {
 			if(!error){
 				for(var i = 0; i<tweets.length; i++){
 					var boom = i + 1;
 					console.log(boom + '. ' + tweets[i].text + ' ~ tweeted on: '+ tweets[i].created_at);
 				}
+				logCommand(answers.userName,'my-tweets', 'tweets displayed');
 			}
 		});
 	}else if(answers.whatToDo === 'spotify-this-song'){
