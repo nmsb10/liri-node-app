@@ -17,3 +17,6 @@ towe requested to do-what-it-says: spotify-this-song: "I Want it That Way";
 happ requested to spotify-this-song: pathetique;
 dea requested to do-what-it-says: spotify-this-song: "I Want it That Way";
 fixedit requested to my-tweets: tweets displayed;
+hithere requested to my-tweets: tweets displayed;
+does it still work requested to spotify-this-song: jingle bells;
+ohyeah requested to my-tweets: tweets displayed;

@@ -13,16 +13,18 @@ var fs = require('fs');
 //this gets twitterKeys from keys.js
 var keysWhatev = require('./keys.js');
 
-////https://github.com/desmondmorris/node-twitter
+//https://github.com/desmondmorris/node-twitter
 var forTwitter = new Twitter(keysWhatev);
 
 inquirer.prompt([
 	{
+		//use inquirer to ask user for their name. just for a nicer user experience
 		type: 'input',
 		name: 'userName',
 		message: 'Hello! What is your name?'
 	},
 	{
+		//offer the user the list of possible commands
 		type: 'list',
 		name: 'whatToDo',
 		message: 'Welcome! What would you like to do?',
@@ -33,19 +35,30 @@ inquirer.prompt([
 			'do-what-it-says'
 		]
 	}
+//based on the user's selection of 'whatToDo' (which is answers.whatToDo), do this:
 ]).then(function(answers){
 	if(answers.whatToDo==='my-tweets'){
-		//console.log('your last 20 tweets');
+		//can make a variable to replace the screen name object with a different user name
 		forTwitter.get('statuses/user_timeline', {screen_name: 'happyfoxchi'}, function(error, tweets, response) {
 			if(!error){
-				for(var i = 0; i<tweets.length; i++){
+				var numberOfTweets = 0;
+				//if tweets is more than 20, limit the number of tweets to display to 20
+				if(tweets.length>20){
+					numberOfTweets = 20;
+				}else{
+					numberOfTweets = tweets.length;
+				}
+				//loop through no more than 20 of the most recent tweets, display with their number
+				for(var i = 0; i<numberOfTweets; i++){
 					var boom = i + 1;
 					console.log(boom + '. ' + tweets[i].text + ' ~ tweeted on: '+ tweets[i].created_at);
 				}
+				//add that the user requested to display tweets to log.txt
 				logCommand(answers.userName,'my-tweets', 'tweets displayed');
 			}
 		});
 	}else if(answers.whatToDo === 'spotify-this-song'){
+		//ask the user which song they want to look up in spotify
 		inquirer.prompt([
 			{
 				type: 'input',
@@ -53,6 +66,7 @@ inquirer.prompt([
 				message: 'Thanks, ' + answers.userName + '! Enter a song you would like to search:'
 			}
 		]).then(function(song){
+			//first check if the user didn't enter a song to search
 			var green = false;
 			if(song.whichSong === ''){
 				// * "The Sign" by Ace of Base
@@ -65,6 +79,7 @@ inquirer.prompt([
 					return;
 				}
 				if(green){
+					//if user did not select a song, search through the results to display only the "Ace of Base" results
 					for(var i = 0; i<data.tracks.items.length; i++){
 						if(data.tracks.items[i].album.artists[0].name==='Ace of Base'){
 							console.log('Artist(s): ' + data.tracks.items[i].album.artists[0].name);
@@ -75,6 +90,8 @@ inquirer.prompt([
 							return;
 						}
 					}
+				//else if user entered a song name, display the required information after
+				//doing such a good job unraveling that array of objects and more arrays and objects
 				}else{
 					console.log('Artist(s): ' + data.tracks.items[0].album.artists[0].name);
 					console.log('Song name: ' + data.tracks.items[0].name);
@@ -95,6 +112,7 @@ inquirer.prompt([
 			//(http://www.omdbapi.com)
 			// See link here: http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
 			//console.log(JSON.stringify(data, null, 2));
+			//if user does not enter a movie title, use mr. nobody
 			if(response.whichMovie===''){
 				response.whichMovie = 'mr nobody';
 			}
@@ -148,7 +166,20 @@ function roast(un, deux){
 			//https://support.twitter.com/articles/160385
 			//This will show your last 20 tweets and when they were created at
 			//in your terminal/bash window.
-			console.log("in progress! Thanks for trying.");
+			forTwitter.get('statuses/user_timeline', {screen_name: 'happyfoxchi'}, function(error, tweets, response) {
+			if(!error){
+				var numberOfTweets = 0;
+				if(tweets.length>20){
+					numberOfTweets = 20;
+				}else{
+					numberOfTweets = tweets.length;
+				}
+				for(var i = 0; i<numberOfTweets; i++){
+					var boom = i + 1;
+					console.log(boom + '. ' + tweets[i].text + ' ~ tweeted on: '+ tweets[i].created_at);
+				}
+			}
+		});
 			break;
 		case 'spotify-this-song':
 			var lime = false;
