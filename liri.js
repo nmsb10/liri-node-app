@@ -11,7 +11,10 @@ var inquirer = require('inquirer');
 var fs = require('fs');
 
 //this gets twitterKeys from keys.js
-var keysForTwit = require('./keys.js');
+var keysWhatev = require('./keys.js');
+
+////https://github.com/desmondmorris/node-twitter
+var forTwitter = new Twitter(keysWhatev);
 
 inquirer.prompt([
 	{
@@ -33,8 +36,14 @@ inquirer.prompt([
 ]).then(function(answers){
 	if(answers.whatToDo==='my-tweets'){
 		console.log('your last 20 tweets');
-		// See link here: http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
-		//console.log(JSON.stringify(data, null, 2));
+		forTwitter.get('statuses/user_timeline', {screen_name: 'happyfoxchi'}, function(error, tweets, response) {
+			if(!error){
+				for(var i = 0; i<tweets.length; i++){
+					var boom = i + 1;
+					console.log(boom + '. ' + tweets[i].text + ' ~ tweeted on: '+ tweets[i].created_at);
+				}
+			}
+		});
 	}else if(answers.whatToDo === 'spotify-this-song'){
 		inquirer.prompt([
 			{
@@ -83,6 +92,8 @@ inquirer.prompt([
 			}
 		]).then(function(response){
 			//(http://www.omdbapi.com)
+			// See link here: http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
+			//console.log(JSON.stringify(data, null, 2));
 			if(response.whichMovie===''){
 				response.whichMovie = 'mr nobody';
 			}

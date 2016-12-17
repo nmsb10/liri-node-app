@@ -11,3 +11,8 @@ jij requested to do-what-it-says: spotify-this-song: "I Want it That Way";
 hi requested to spotify-this-song: gattaca;
 gig requested to movie-this: gattaca;
 did requested to spotify-this-song: tempest sonata;
+hotdog requested to spotify-this-song: moonlight;
+bun requested to movie-this: strangers with candy;
+towe requested to do-what-it-says: spotify-this-song: "I Want it That Way";
+happ requested to spotify-this-song: pathetique;
+dea requested to do-what-it-says: spotify-this-song: "I Want it That Way";
