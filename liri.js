@@ -33,6 +33,8 @@ inquirer.prompt([
 ]).then(function(answers){
 	if(answers.whatToDo==='my-tweets'){
 		console.log('your last 20 tweets');
+		// See link here: http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
+		//console.log(JSON.stringify(data, null, 2));
 	}else if(answers.whatToDo === 'spotify-this-song'){
 		inquirer.prompt([
 			{
@@ -59,6 +61,7 @@ inquirer.prompt([
 							console.log('Song name: ' + data.tracks.items[i].name);
 							console.log('Spotify preview link: ' + data.tracks.items[i].preview_url);
 							console.log('Album name: ' + data.tracks.items[i].album.name);
+							logCommand(answers.userName,'spotify-this-song',song.whichSong);
 							return;
 						}
 					}
@@ -67,6 +70,7 @@ inquirer.prompt([
 					console.log('Song name: ' + data.tracks.items[0].name);
 					console.log('Spotify preview link: ' + data.tracks.items[0].preview_url);
 					console.log('Album name: ' + data.tracks.items[0].album.name);
+					logCommand(answers.userName,'spotify-this-song',song.whichSong);
 				}
 			});
 		});
@@ -78,11 +82,12 @@ inquirer.prompt([
 				message: 'Thank you, ' + answers.userName + '! Enter a movie you would like to search:'
 			}
 		]).then(function(response){
-			////(http://www.omdbapi.com)
-			var queryUrl = "http://www.omdbapi.com/?t=" + response.whichMovie + "&y=&plot=full&r=json&tomatoes=true";
+			//(http://www.omdbapi.com)
 			if(response.whichMovie===''){
-				queryUrl = 'http://www.omdbapi.com/?t=mr%20nobody&y=&plot=full&r=json&tomatoes=true';
+				response.whichMovie = 'mr nobody';
 			}
+			logCommand(answers.userName, 'movie-this',response.whichMovie);
+			var queryUrl = "http://www.omdbapi.com/?t=" + response.whichMovie + "&y=&plot=full&r=json&tomatoes=true";			
 			request(queryUrl, function(error, redShrimp, algae){
 			//if the request is successful, statusCodes may include...
 			if(!error && redShrimp.statusCode ===200){
@@ -99,15 +104,31 @@ inquirer.prompt([
 			});
 		});
 	}else if(answers.whatToDo === 'do-what-it-says'){
-		console.log("thanks for playing. finish this in a moment please.");
-		// See link here: http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
-		//console.log(JSON.stringify(data, null, 2));
+		//read the random.txt file, read utf8 format
+		fs.readFile('random.txt','utf8', function(error, data){
+			if(error){
+				return console.log(error);
+			}
+			var dataArray = data.split(',');
+			var doWhat = '';
+			var ofWhat = '';
+			for(var i = 0; i<dataArray.length; i++){
+				doWhat = dataArray[0];
+				ofWhat = dataArray[1];
+			}
+			roast(doWhat, ofWhat);
+			logCommand(answers.userName,'do-what-it-says',doWhat + ': ' + ofWhat);
+		});
 	}
-
 });
 
-
-//roast(sizzle, spaghetti);
+function logCommand(user, order, task){
+	fs.appendFile('log.txt', user + ' requested to ' + order + ': ' + task + ';\n', function(err){
+		if(err){
+			console.log(err);
+		}
+	});
+}
 
 function roast(un, deux){
 	switch(un){
@@ -115,107 +136,64 @@ function roast(un, deux){
 			//https://support.twitter.com/articles/160385
 			//This will show your last 20 tweets and when they were created at
 			//in your terminal/bash window.
+			console.log("in progress! Thanks for trying.");
 			break;
 		case 'spotify-this-song':
-			console.log('spotifylicious');
-			//This will show the following information about the song (deux)
-			//in your terminal/bash window
+			var lime = false;
+			if(deux === ''){
+				// * "The Sign" by Ace of Base
+				deux = "The Sign";
+				lime = true;
+			}
 			spotify.search({ type: 'track', query: deux }, function(err, data) {
 				if (err) {
 					console.log('Error occurred: ' + err);
 					return;
 				}
-				console.log(data.album.name+ '\n'+data[0].album.name);
-				// Do something with 'data' 
+				if(lime){
+					for(var i = 0; i<data.tracks.items.length; i++){
+						if(data.tracks.items[i].album.artists[0].name==='Ace of Base'){
+							console.log('Artist(s): ' + data.tracks.items[i].album.artists[0].name);
+							console.log('Song name: ' + data.tracks.items[i].name);
+							console.log('Spotify preview link: ' + data.tracks.items[i].preview_url);
+							console.log('Album name: ' + data.tracks.items[i].album.name);
+							return;
+						}
+					}
+				}else{
+					console.log('Artist(s): ' + data.tracks.items[0].album.artists[0].name);
+					console.log('Song name: ' + data.tracks.items[0].name);
+					console.log('Spotify preview link: ' + data.tracks.items[0].preview_url);
+					console.log('Album name: ' + data.tracks.items[0].album.name);
+				}
 			});
-	//     * Artist(s)
-	//     * The song's name
-	//     * A preview link of the song from Spotify
-	//     * The album that the song is from
-
-	// * if no song is provided then your program will default to
-	//     * "The Sign" by Ace of Base
 			break;
 		case 'movie-this':
-			//This will output the following information to your
-			//terminal/bash window:
-			//     * Title of the movie.
-			//     * Year the movie came out.
-			//     * OMDB Rating of the movie.
-			//     * Country where the movie was produced.
-			//     * Language of the movie.
-			//     * Plot of the movie.
-			//     * Actors in the movie.
-			//     * Rotten Tomatoes Rating.
-			//     * Rotten Tomatoes URL
-			//https://www.omdbapi.com/
-			//send all data requests to:
-			//var pasta = 'http://www.omdbapi.com/?';
-			var queryUrl = "http://www.omdbapi.com/?t=" + deux + "&y=&plot=short&r=json";
-			//request(queryUrl, function(error, response, body) {
+			if(deux.trim() === ''){
+				deux = 'mr nobody';
+			}
+			var queryUrl = "http://www.omdbapi.com/?t=" + deux + "&y=&plot=full&r=json&tomatoes=true";			
 			request(queryUrl, function(error, redShrimp, algae){
 				//if the request is successful, statusCodes may include...
 				if(!error && redShrimp.statusCode ===200){
 					console.log('Title: ' + JSON.parse(algae).Title);
+					console.log('Year & Release Date: ' + JSON.parse(algae).Year + ' | ' + JSON.parse(algae).Released);
+					console.log('imdbRating and Votes: ' + JSON.parse(algae).imdbRating + " | " + JSON.parse(algae).imdbVotes);
+					console.log('In Which Country(ies) Produced: ' + JSON.parse(algae).Country);
+					console.log('Language: ' + JSON.parse(algae).Language);
+					console.log('Actors: ' + JSON.parse(algae).Actors);
+					console.log('Plot: ' + JSON.parse(algae).Plot);
+					console.log('Rating by Rotten Tomatoes: ' + JSON.parse(algae).tomatoRating);
+					console.log('Rotten Tomatoes URL: ' + JSON.parse(algae).tomatoURL);
 				}
 			});
-
-			// See link here: http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
-			//console.log(JSON.stringify(data, null, 2));
-
-// 	example) JSON.parse(body).Plot
-// request(queryUrl, function(error, response, body){}
-
-// 	so that's the parameter i used for request, and seems like when
-//you use JSON.parse(body), seemed to be reading as object.
-
-
-	// * If the user doesn't type a movie in, the program will output data for the movie 'Mr. Nobody.'
-	//    * If you haven't watched "Mr. Nobody," then you should: http://www.IMDB.com/title/tt0485947/
-	//     * It's on Netflix!
 			break;
 		case 'do-what-it-says':
-			logCommand(un, deux);
-			//dash();
-			//Using the fs Node package, LIRI will take the text inside
-			//of random.txt and then use it to call one of LIRI's commands.
-	// It should run spotify-this-song for "I Want it That Way," as follows the text in random.txt.
-	// Feel free to change the text in that document to test out the feature for other commands.
-	// BONUS
-
-	// In addition to logging the data to your terminal/bash window, output the data to a .txt file called log.txt.
-	// Make sure you append each command you run to the log.txt file.
-	// Do not overwrite your file each time you run a command.
+			console.log("eh. try again.");
 			break;
 		default:
 			console.log('what the heck. I cannot understand :(');
-}
-
-}
-
-function logCommand(order, task){
-	fs.appendFile('log.txt', order + ': ' + task + ';\n', function(err){
-		if(err){
-			console.log(err);
-		}
-	});
-}
-
-function dash(){
-	//read the random.txt file, read utf8 format
-	fs.readFile('random.txt','utf8', function(error, data){
-		if(error){
-			return console.log(error);
-		}
-		var dataArray = data.split(';');
-		var doWhat = '';
-		var ofWhat = '';
-		for(var i = 0; i<dataArray.length; i++){
-			doWhat = dataArray[0];
-			ofWhat = dataArray[1];
-		}
-		roast(doWhat, ofWhat);
-	});
+	}
 }
 
 //homework 8:
